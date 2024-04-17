@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  selectClickedBall,
-  setSelectedBallColor,
-  update,
-  updateBallVelocities,
+  Game
 } from "./game";
 import { BallContextMenu } from "./components/BallContextMenu";
 import { Position } from "./types";
+
+let game: Game;
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -18,27 +17,29 @@ function App() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    update(canvas.width, canvas.height, ctx);
+    game = new Game(canvas);
+    game.start();
   }, []);
 
   const handleCanvasClick = (evt: React.MouseEvent<HTMLCanvasElement>) => {
     const { offsetX: x, offsetY: y } = evt.nativeEvent;
-    selectClickedBall({ x, y });
-    setBallMenuPosition({ x, y });
+    const ballSelected = game?.selectClickedBall({ x, y });
+    if (ballSelected) {
+      setBallMenuPosition({ x, y });
+    }
   };
 
   const handleMouseMove = (
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
+    if (!game) return;
+
     const { offsetX: x, offsetY: y } = event.nativeEvent;
-    updateBallVelocities(x, y);
+    game.updateBallVelocities(x, y);
   };
 
   const handleColorChange = (color: string) => {
-    setSelectedBallColor(color);
+    game.setSelectedBallColor(color);
     setBallMenuPosition(null);
   };
 
